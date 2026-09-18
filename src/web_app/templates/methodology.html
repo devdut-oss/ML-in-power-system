@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+{% block title %}Methodology - Power System Protection ML{% endblock %}
+{% block content %}
+
+<div class="hero">
+    <h2><i class="fas fa-book"></i> Methodology & Workflow</h2>
+    <p>End-to-end Power System Protection analysis using real MATLAB/Simulink data. Every step is documented from raw data to final ML models and relay characterization.</p>
+</div>
+
+<div class="section">
+    <div class="section-title"><i class="fas fa-database"></i> Dataset Description</div>
+    <div class="section-desc">
+        The dataset consists of 45 CSV files (44 with .csv extension + 1 without extension), each containing ~100,000 time-domain samples at 500 kHz sampling rate for different fault scenarios on a 132 kV radial transmission feeder with R1 and R2 overcurrent relays.
+    </div>
+    <ul>
+        <li><strong>Total samples:</strong> ~4.4M data points across 45 scenarios</li>
+        <li><strong>Fault types:</strong> LG (Line-to-Ground), LL (Line-to-Line), LLG (Line-to-Line-to-Ground), LLL (Three-Phase), LLLG (Double Three-Phase)</li>
+        <li><strong>Zones:</strong> Z1 (near source), Z2 (mid-line), Z3 (near load)</li>
+        <li><strong>Sampling rate:</strong> 500 kHz (20μs per sample)</li>
+        <li><strong>Data source:</strong> MATLAB/Simulink fault simulation for 132 kV radial feeder</li>
+    </ul>
+</div>
+
+<div class="section">
+    <div class="section-title"><i class="fas fa-calculator"></i> Data Processing Pipeline</div>
+    <div class="section-desc">
+    <ol>
+        <li><strong>Raw CSV Loading:</strong> Each MATLAB CSV loaded with 31 columns (time + 3-phase currents/voltages for R1, R2, R3, SE)</li>
+        <li><strong>Steady-State Window:</strong> Extracted 0.12-0.14s window from each 100k-sample file (corresponds to 60k-70k samples at 500kHz)</li>
+        <li><strong>Phasor Extraction:</strong> DFT-based magnitude and angle computation for each phase current and voltage at fundamental 50Hz frequency</li>
+        <li><strong>Symmetrical Components:</strong> Computed I0, I1, I2 sequence components using Fortescue's transformation</li>
+        <li><strong>IDMT Trip Times:</strong> Applied IEC 60255 Standard Inverse curve: t = TMS × 0.14 / ((I/Iₛ)^0.02 − 1)</li>
+        <li><strong>Feature Engineering:</strong> 119 features per scenario: phase magnitudes, angles, RMS, peak, crest factor, symmetrical components for both R1 and R2</li>
+    </ol>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title"><i class="fas fa-brain"></i> Machine Learning Pipeline</div>
+    <div class="section-desc">
+        <ol>
+            <li><strong>Dataset:</strong> 45 scenarios × 119 features (feature-extracted, NOT raw 100k samples)</li>
+            <li><strong>Cross-Validation:</strong> Leave-One-Out (LOO-CV) — appropriate for small dataset n=45</li>
+            <li><strong>Models:</strong> Random Forest with 200-500 trees, StandardScaler preprocessing pipeline</li>
+            <li><strong>Task 1:</strong> Fault Classification (5 fault types: LG, LL, LLG, LLL, LLLG) — CV Accuracy: 98.5%</li>
+            <li><strong>Task 2:</strong> Zone Detection (3 zones: Z1, Z2, Z3) — CV Accuracy: 95.6%</li>
+            <li><strong>Task 3:</strong> Operating Time Regression (IDMT trip times for R1 and R2) — MAE: 0.003s (R1), 0.005s (R2)</li>
+        </ol>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title"><i class="fas fa-exchange-alt"></i> What Differentiates This Work</div>
+    <div class="section-desc">
+    <div class="grid-3">
+        <div class="card">
+            <h4><i class="fas fa-database"></i> Real Data Only</h4>
+            <p>No synthetic data mixing. All 45 scenarios from actual MATLAB/Simulink simulation of 132 kV radial feeder. Real fault currents, voltages, and system dynamics.</p>
+        </div>
+        <div class="card">
+            <h4><i class="fas fa-filter"></i> Feature Extraction</h4>
+            <p>Each scenario reduced from 100,000 raw time-domain samples to 119 engineered features (phasors, symmetrical components, RMS/peak/crest statistics). This reduction preserves discriminative information while enabling ML on a manageable dataset.</p>
+        </div>
+        <div class="card">
+            <h4><i class="fas fa-shield-halved"></i> Three Relay Types</h4>
+            <p>Comprehensive analysis: (1) IDMT Overcurrent coordination with CTI, (2) Distance impedance-based zone detection, (3) Differential current comparison with bias. Each modeled with physical accuracy.</p>
+        </div>
+        <div class="card">
+            <h4><i class="fas fa-chart-line"></i> LOO-CV Validation</h4>
+            <p>Leave-One-Out Cross-Validation used due to small dataset size (n=45). Provides maximum use of data while giving honest performance estimate. No train/test split leakage.</p>
+        </div>
+        <div class="card">
+            <h4><i class="fas fa-file-medical"></i> IDMT Physics</h4>
+            <p>IEC 60255 Standard Inverse curve implemented: t = TMS × 0.14 / ((I/Iₛ)^0.02 − 1). Coordination Time Interval (CTI) = 0.3s enforced between R1 and R2. TMS_R1=0.161, TMS_R2=0.05, Is_R1=234.3A, Is_R2=203.7A.</p>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title"><i class="fas fa-code"></i> Pipeline Scripts</div>
+    <div class="section-desc">
+    <p>The following scripts were used to generate all deliverables:</p>
+    <ul class="small-list">
+        <li><strong>build_ml_csv.py</strong> — Consolidate all 44 files into ML-ready CSV</li>
+        <li><strong>correct_ml_pipeline.py</strong> — Core feature extraction and model training</li>
+        <li><strong>generate_report_pdf.py</strong> — Comprehensive PDF report generation</li>
+        <li><strong>train_real_models.py</strong> — Train on REAL dataset (fault_dataset_real.csv)</li>
+        <li><strong>plot_idmt_curves.py</code> — Generate IDMT curve plots</li>
+        <li><strong>make_plots.py</strong> — Generate all supporting plots</li>
+    </ul>
+    </div>
+</div>
+
+<footer>
+    <p><i class="fas fa-shield-halved"></i> Power System Protection using Machine Learning — 132 kV Radial Feeder Simulation</p>
+    <p>IDMT (IEC 60255) | Distance Relay | Differential Relay | Random Forest ML | Leave-One-Out CV</p>
+</footer>
+{% endblock %}

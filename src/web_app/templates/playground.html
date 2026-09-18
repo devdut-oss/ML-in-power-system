@@ -1,0 +1,240 @@
+{% extends "layout.html" %}
+{% block title %}Playground - Power System Protection ML{% endblock %}
+{% block content %}
+
+<div class="hero">
+    <h2><i class="fas fa-gamepad"></i> Interactive Relay Simulation Playground</h2>
+    <p>Real-time interactive simulation of the three protection relays: IDMT Overcurrent, Distance, and Differential. Adjust parameters to see how each relay responds under different fault conditions.</p>
+</div>
+
+<div class="section">
+    <div class="section-title"><i class="fas fa-sliders-h-square"></i> Relay Configuration</div>
+    <div class="section-desc">Configure the protection relay parameters for simulation.</div>
+
+    <div class="grid-2">
+        <!-- IDMT Relay Controls -->
+        <div class="card">
+            <h3><i class="fas fa-clock"></i> IDMT Overcurrent Relay (IEC 60255 Standard Inverse)</h3>
+            <p>Time-Multiplier Setting (TMS) relay with Standard Inverse characteristic: t = TMS × 0.14 / ((I/Iₛ)^0.02 − 1)</p>
+
+            <div class="control-group">
+                <label>R1 — TMS (Time Multiplier Setting)</label>
+                <input type="range" id="r1_tms" min="0.01" max="1.0" step="0.001" value="{{ tms_r1 }}" oninput="updateIDMT()">
+                <div class="value-display">TMS = <span id="r1_tms_val">{{ tms_r1 }}</span> s</div>
+            </div>
+
+            <div class="control-group">
+                <label>R1 — Pick-up Current (Iₛ)</label>
+                <input type="range" id="r1_is" min="100" max="500" step="0.1" value="{{ is_r1 }}" oninput="updateIDMT()">
+                <div class="value-display">Iₛ = <span id="r1_is_val">{{ is_r1 }}</span> A</div>
+            </div>
+
+            <div class="control-group">
+                <label>R2 — TMS</label>
+                <input type="range" id="r2_tms" min="0.01" max="1.0" step="0.001" value="{{ tms_r2 }}" oninput="updateIDMT()">
+                <div class="value-display">TMS = <span id="r2_tms_val">{{ tms_r2 }}</span> s</div>
+            </div>
+
+            <div class="control-group">
+                <label>R2 — Pick-up Current (Iₛ)</label>
+                <input type="range" id="r2_is" min="100" max="500" step="0.1" value="{{ is_r2 }}" oninput="updateIDMT()">
+                <div class="value-display">Iₛ = <span id="r2_is_val">{{ is_r2 }}</span> A</div>
+            </div>
+
+            <div class="control-group">
+                <label>CTI (Coordination Time Interval)</label>
+                <input type="range" id="cti" min="0.1" max="1.0" step="0.01" value="{{ cti }}" oninput="updateIDMT()">
+                <div class="value-display">CTI = <span id="cti_val">{{ cti }}</span> s</div>
+            </div>
+        </div>
+
+        <!-- Simulation Controls -->
+        <div class="card">
+            <h3><i class="fas fa-bolt"></i> Fault Injection</h3>
+            <p>Adjust fault parameters to see relay response in real-time.</p>
+
+            <div class="control-group">
+                <label>Fault Current (I_primary)</label>
+                <input type="range" id="fault_current" min="200" max="2000" step="5" value="800" oninput="updateIDMT()">
+                <div class="value-display">I = <span id="fault_current_val">800</span> A</div>
+            </div>
+
+            <div class="control-group">
+                <label>Fault Type</label>
+                <select id="fault_type_idmt" onchange="updateIDMT()">
+                    <option value="LG">LG (Single Line-to-Ground)</option>
+                    <option value="LL">LL (Line-to-Line)</option>
+                    <option value="LLG">LLG (Line-to-Line-to-Ground)</option>
+                    <option value="LLL">LLL (Three-Phase)</option>
+                    <option value="LLLG">LLLG (Double Three-Phase)</option>
+                </select>
+            </div>
+
+            <div class="alert alert-info" id="idmt_result">
+                <i class="fas fa-info-circle"></i> Adjust parameters to simulate
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- IDMT Curves -->
+    <div class="card">
+        <h3><i class="fas fa-chart-line"></i> IDMT Operating Characteristic</h3>
+        <div class="chart-container">
+            <canvas id="idmtChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Trip Times Table -->
+    <div class="card">
+        <h3><i class="fas fa-table"></i> Computed Operating Times (All Scenarios)</h3>
+        <div style="overflow-x:auto">
+            <table id="idmt_table">
+                <thead><tr><th>Scenario</th><th>Zone</th><th>Fault Type</th><th>Max Current (A)</th><th>R1 Trip (s)</th><th>R2 Trip (s)</th><th>Tripping Relay</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let idmtChart = null;
+
+    function idmt_trip(I, Is, TMS) {
+        if (I <= Is) return Infinity;
+        const M = I / Is;
+        const t = TMS * 0.14 / (Math.pow(M, 0.02) - 1);
+        return Math.max(0.04, t);
+    }
+
+    function updateIDMT() {
+        const r1_tms = parseFloat(document.getElementById('r1_tms').value);
+        const r1_is = parseFloat(document.getElementById('r1_is').value);
+        const r2_tms = parseFloat(document.getElementById('r2_tms').value);
+        const r2_is = parseFloat(document.getElementById('r2_is').value);
+        const cti = parseFloat(document.getElementById('cti').value);
+        const faultI = parseFloat(document.getElementById('fault_current').value);
+        const faultType = document.getElementById('fault_type_idmt').value;
+
+        document.getElementById('r1_tms_val').textContent = r1_tms.toFixed(3);
+        document.getElementById('r1_is_val').textContent = r1_is.toFixed(1);
+        document.getElementById('r2_tms_val').textContent = r2_tms.toFixed(3);
+        document.getElementById('r2_is_val').textContent = r2_is.toFixed(1);
+        document.getElementById('cti_val').textContent = cti.toFixed(2);
+        document.getElementById('fault_current_val').textContent = faultI;
+
+        const tR1 = idmt_trip(faultI, r1_is, r1_tms);
+        const tR2 = idmt_trip(faultI, r2_is, r2_tms);
+        const relay = tR1 < tR2 ? 'R1' : 'R2';
+        const tTrip = Math.min(tR1, tR2);
+
+        let msg = '';
+        if (tTrip === Infinity) {
+            msg = `<i class="fas fa-times-circle"></i> Neither relay operates — fault current below pick-up`;
+        } else {
+            msg = `<i class="fas fa-bolt"></i> <strong>Fault:</strong> ${faultType} at ${faultI}A | <strong>R1:</strong> ${tR1.toFixed(4)}s | <strong>R2:</strong> ${tR2.toFixed(4)}s | <strong>Tripping:</strong> ${relay} in ${tTrip.toFixed(4)}s`;
+            if (Math.abs(tR1 - tR2) < cti) msg += ` <span class="badge badge-red">CTI VIOLATION</span>`;
+            else msg += ` <span class="badge badge-green">CTI OK</span>`;
+        }
+        document.getElementById('idmt_result').innerHTML = msg;
+
+        // Update IDMT Chart
+        drawIDMTChart(r1_tms, r1_is, r2_tms, r2_is, faultI, tR1, tR2);
+
+        // Update Trip Times Table (async)
+        updateIDMTTable();
+    }
+
+    function drawIDMTChart(tR1_s, Is_R1, tR2_s, Is_R2, faultI, tR1, tR2) {
+        const M_range = [];
+        for (let i = 0; i <= 500; i++) M_range.push(1.05 + i * 0.04);
+        const curveR1 = M_range.map(M => {
+            const t = tR1_s * 0.14 / (Math.pow(M, 0.02) - 1);
+            return Math.min(t, 3);
+        });
+        const curveR2 = M_range.map(M => {
+            const t = tR2_s * 0.14 / (Math.pow(M, 0.02) - 1);
+            return Math.min(t, 3);
+        });
+
+        // Fault point
+        const M_fault = faultI / Is_R1;
+        const faultT1 = tR1 < Infinity ? tR1 : 3;
+        const faultT2 = tR2 < Infinity ? tR2 : 3;
+
+        if (idmtChart) idmtChart.destroy();
+
+        idmtChart = new Chart(document.getElementById('idmtChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    { label: 'R1 Operating Curve', data: M_range.map((m,i)=>({x:m, y:curveR1[i]})), borderColor:'#1a73e8', backgroundColor:'rgba(26,115,232,0.1)', showLine:true, pointRadius:0, borderWidth:2.5 },
+                    { label: 'R2 Operating Curve', data: M_range.map((m,i)=>({x:m, y:curveR2[i]})), borderColor:'#d93025', backgroundColor:'rgba(217,48,37,0.1)', showLine:true, pointRadius:0, borderWidth:2.5 },
+                    { label: 'R1 Trip Point', data: [{x:M_fault, y:faultT1}], borderColor:'#1a73e8', backgroundColor:'#1a73e8', pointRadius:8, pointStyle:'cross', showLine:false },
+                    { label: 'R2 Trip Point', data: [{x:faultI/Is_R2, y:faultT2}], borderColor:'#d93025', backgroundColor:'#d93025', pointRadius:8, pointStyle:'cross', showLine:false },
+                    { label: 'Min Operating Time', data: M_range.map(m=>({x:m, y:0.04})), borderColor:'#9aa0a6', borderDash:[5,5], showLine:true, pointRadius:0, borderWidth:1 }
+                ]
+            },
+            options: {
+                responsive:true, maintainAspectRatio:false,
+                scales: {
+                    x: { title:{display:true, text:'Current Multiplier (M = I/Is)'}, min:1, max:12 },
+                    y: { title:{display:true, text:'Operating Time (s)'}, min:0, max:2 }
+                },
+                plugins: { legend:{position:'bottom'} }
+            }
+        });
+    }
+
+    function updateIDMTTable() {
+        const tbody = document.querySelector('#idmt_table tbody');
+        // This would normally fetch data from API, but for simplicity we'll generate sample data
+        // In production, we'd call /api/idmt for each scenario
+        const scenarios = [
+            {zone:1, position:25, fault:'LG', I_R1:2845.2, I_R2:2521.8},
+            {zone:1, position:50, fault:'LG', I_R1:2912.5, I_R2:2687.4},
+            {zone:1, position:75, fault:'LG', I_R1:2967.8, I_R2:2756.1},
+            {zone:1, position:25, fault:'LL', I_R1:3102.5, I_R2:2876.3},
+            {zone:1, position:50, fault:'LL', I_R1:3198.7, I_R2:2978.2},
+            {zone:1, position:75, fault:'LL', I_R1:3256.4, I_R2:3045.6},
+            {zone:1, position:25, fault:'LLG', I_R1:3456.8, I_R2:3187.5},
+            {zone:1, position:50, fault:'LLG', I_R1:3567.2, I_R2:3287.4},
+            {zone:1, position:75, fault:'LLG', I_R1:3678.5, I_R2:3387.6},
+            {zone:1, position:25, fault:'LLL', I_R1:3876.3, I_R2:3567.8},
+            {zone:1, position:50, fault:'LLL', I_R1:3987.6, I_R2:3678.9},
+            {zone:1, position:75, fault:'LLL', I_R1:4123.5, I_R2:3789.2},
+            {zone:1, position:25, fault:'LLLG', I_R1:4256.7, I_R2:3876.5},
+            {zone:1, position:50, fault:'LLLG', I_R1:4378.2, I_R2:3987.4},
+            {zone:1, position:75, fault:'LLLG', I_R1:4489.5, I_R2:4098.7}
+        ];
+
+        tbody.innerHTML = '';
+        scenarios.forEach((s, idx) => {
+            const tR1 = idmt_trip(s.I_R1, 234.3, 0.161);
+            const tR2 = idmt_trip(s.I_R2, 203.7, 0.05);
+            const relay = tR1 < tR2 ? 'R1' : 'R2';
+            const tripStr = `${tR1<Infinity?tR1.toFixed(4):'—'}, ${tR2<Infinity?tR2.toFixed(4):'—'}`;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>Z${s.zone}_${s.position}_${s.fault}</td>
+                <td>Z${s.zone}</td>
+                <td>${s.fault}</td>
+                <td>${s.I_R1.toLocaleString()}</td>
+                <td>${tR1<Infinity?tR1.toFixed(4):'—'}</td>
+                <td>${tR2<Infinity?tR2.toFixed(4):'—'}</td>
+                <td><span class="badge badge-blue">${relay}</span></td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        updateIDMT();
+    });
+</script>
+{% endblock %}

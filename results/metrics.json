@@ -1,0 +1,93 @@
+{
+  "M1_detection": {
+    "DecisionTree": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.9956
+    },
+    "RandomForest": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.91
+    },
+    "SVM-RBF": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.9919
+    },
+    "MLP": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.9929
+    },
+    "best": "DecisionTree"
+  },
+  "M2_fault_type": {
+    "DecisionTree": {
+      "test_acc": 0.9948,
+      "macro_f1": 0.9947,
+      "cv5_acc": 0.9904
+    },
+    "RandomForest": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 1.0
+    },
+    "SVM-RBF": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.9431
+    },
+    "MLP": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.9952
+    },
+    "best": "RandomForest"
+  },
+  "M3_relay_selection": {
+    "DecisionTree": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.9496
+    },
+    "RandomForest": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.955
+    },
+    "SVM-RBF": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.9683
+    },
+    "MLP": {
+      "test_acc": 1.0,
+      "macro_f1": 1.0,
+      "cv5_acc": 0.9962
+    },
+    "best": "DecisionTree"
+  },
+  "M4_location_km": {
+    "RandomForest": {
+      "MAE": 0.9697,
+      "R2": 0.99636
+    },
+    "MLP": {
+      "MAE": 0.7487,
+      "R2": 0.99827
+    },
+    "best": "MLP"
+  },
+  "M5_idmt_trip_time": {
+    "RandomForest": {
+      "MAE": 0.0019,
+      "R2": 0.99919
+    },
+    "MLP": {
+      "MAE": 0.0115,
+      "R2": 0.98557
+    },
+    "best": "RandomForest"
+  }
+}

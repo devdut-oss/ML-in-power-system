@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Power System Protection ML{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <i class="fas fa-bolt"></i>
+                <span>Power System Protection ML</span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <i class="fas fa-home"></i> Overview
+                </a>
+                <a href="/playground" class="nav-link {% if request.path == '/playground' %}active{% endif %}">
+                    <i class="fas fa-gamepad"></i> Playground
+                </a>
+                <a href="/results" class="nav-link {% if request.path == '/results' %}active{% endif %}">
+                    <i class="fas fa-chart-bar"></i> Results
+                </a>
+                <a href="/methodology" class="nav-link {% if request.path == '/methodology' %}active{% endif %}">
+                    <i class="fas fa-book"></i> Methodology
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p><i class="fas fa-shield-halved"></i> Power System Protection using Machine Learning</p>
+            <p>132 kV Radial Transmission Feeder | IDMT (IEC 60255) | Distance Relay | Differential Relay | Random Forest ML</p>
+            <p style="margin-top:8px; font-size:0.8rem; opacity:0.7;">Data: 45 MATLAB/Simulink fault scenarios | 119 features extracted per scenario | LOO-CV validation</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

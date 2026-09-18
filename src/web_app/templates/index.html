@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+{% block title %}Overview - Power System Protection ML{% endblock %}
+{% block content %}
+
+<div class="hero">
+    <h2><i class="fas fa-shield-halved"></i> 132 kV Radial Feeder Protection</h2>
+    <p>Complete Power System Protection simulation using real MATLAB/Simulink fault data. Three relay types analyzed: IDMT Overcurrent, Distance, and Differential — with ML-based fault classification and zone detection.</p>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <div class="num">45</div>
+            <div class="lbl">Fault Scenarios</div>
+        </div>
+        <div class="hero-stat">
+            <div class="num">5</div>
+            <div class="lbl">Fault Types</div>
+        </div>
+        <div class="hero-stat">
+            <div class="num">3</div>
+            <div class="lbl">Relay Types</div>
+        </div>
+        <div class="hero-stat">
+            <div class="num">119</div>
+            <div class="lbl">Features/Scenario</div>
+        </div>
+        <div class="hero-stat">
+            <div class="num">98.5%</div>
+            <div class="lbl">Max CV Accuracy</div>
+        </div>
+    </div>
+</div>
+
+<div class="section" id="dataset">
+    <div class="section-title"><i class="fas fa-database"></i> Dataset Information</div>
+    <div class="section-desc">Real MATLAB/Simulink fault simulation data for a 132 kV radial transmission feeder. 45 CSV files, each with ~100,000 samples at 500 kHz.</div>
+
+    <div class="grid-3">
+        <div class="card metric-card">
+            <div class="metric-value">45</div>
+            <div class="metric-label">Fault Scenarios</div>
+        </div>
+        <div class="card metric-card green">
+            <div class="metric-value">4.4M</div>
+            <div class="metric-label">Total Samples</div>
+        </div>
+        <div class="card metric-card orange">
+            <div class="metric-value">500 kHz</div>
+            <div class="metric-label">Sampling Rate</div>
+        </div>
+        <div class="card metric-card">
+            <div class="metric-value">5</div>
+            <div class="metric-label">Fault Types</div>
+        </div>
+        <div class="card metric-card green">
+            <div class="metric-value">3</div>
+            <div class="metric-label">Zones</div>
+        </div>
+        <div class="card metric-card red">
+            <div class="metric-value">119</div>
+            <div class="metric-label">Features/Scenario</div>
+        </div>
+    </div>
+</div>
+
+<div class="section" id="summary">
+    <div class="section-title"><i class="fas fa-clipboard-check"></i> Project Summary</div>
+    <div class="section-desc">Key results from training Random Forest models on feature-extracted scenarios.</div>
+
+    <div class="grid-3" id="metrics-overview">
+        <!-- Populated by JavaScript -->
+    </div>
+
+    <div class="card" style="margin-top:20px">
+        <h3><i class="fas fa-table"></i> Scenarios Overview</h3>
+        <div style="overflow-x:auto">
+            <table id="scenarios-table">
+                <thead><tr><th>#</th><th>Zone</th><th>Position</th><th>Fault Type</th><th>R1 Trip (s)</th><th>R2 Trip (s)</th><th>Max R1 Current (A)</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

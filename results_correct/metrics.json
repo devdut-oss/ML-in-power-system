@@ -1,0 +1,26 @@
+{
+  "fault_classification": {
+    "cv_acc_mean": 0.9318181818181818,
+    "cv_acc_std": 0.25205764787294127,
+    "cv_correct": 41,
+    "cv_total": 44
+  },
+  "zone_detection": {
+    "cv_acc_mean": 0.9545454545454546,
+    "cv_acc_std": 0.20829889522526548,
+    "cv_correct": 42,
+    "cv_total": 44
+  },
+  "R1_trip_time": {
+    "cv_mae_mean": 1.1280378393965387e-05,
+    "cv_mae_std": 6.79667103313977e-06,
+    "cv_r2_mean": NaN,
+    "cv_r2_std": NaN
+  },
+  "R2_trip_time": {
+    "cv_mae_mean": 2.7276090582726525e-05,
+    "cv_mae_std": 1.7135629623212153e-05,
+    "cv_r2_mean": NaN,
+    "cv_r2_std": NaN
+  }
+}
