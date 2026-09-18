@@ -10,7 +10,7 @@ import pandas as pd
 from pathlib import Path
 from flask import Flask, render_template, request, jsonify
 
-app = Flask(__name__, template_folder='src/web_app/templates', static_folder='src/web_app/static')
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 # =============================================================================
 # CONFIGURATION (matching correct_ml_pipeline.py)
