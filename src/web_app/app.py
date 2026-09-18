@@ -15,7 +15,7 @@ app = Flask(__name__, template_folder='src/web_app/templates', static_folder='sr
 # =============================================================================
 # CONFIGURATION (matching correct_ml_pipeline.py)
 # =============================================================================
-PROJECT_ROOT = Path(__file__).parent.parent.resolve()
+PROJECT_ROOT = Path(__file__).parent.parent.parent.resolve()
 RESULTS_DIR = PROJECT_ROOT / "final one" / "results"
 DATA_DIR = PROJECT_ROOT / "data"
 FINAL_DIR = PROJECT_ROOT / "final one"
